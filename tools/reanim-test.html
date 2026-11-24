@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><style>body{margin:0;background:#333}</style></head>
+<body>
+<canvas id="c" width="800" height="300"></canvas>
+<script>
+// 最小 Assets 桩：只服务本次测试的图片查找（与正式实现的键名规则一致）
+var __imgs = new Map();
+function norm(id) {
+  return String(id).replace(/^IMAGE_REANIM_/i, "").replace(/^IMAGE_/i, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+var Assets = {
+  image: function (id) { return __imgs.get(norm(id)) || null; },
+  imageMask: function (id) { return null; },
+  reanim: function (name) { return __reanims[name] || null; },
+};
+</script>
+<script src="../src/core/reanim.js"></script>
+<script>
+var __reanims = {};
+var NEED_REANIM = ["LoadBar_sprout", "LoadBar_Zombiehead"];
+var NEED_IMAGES = [
+  "sprout_body", "sprout_petal", "anim_sprout",
+  "PotatoMine_rock1", "PotatoMine_rock3",
+  "Zombie_head", "Zombie_hair", "Zombie_jaw",
+];
+Promise.all(
+  NEED_REANIM.map(function (name) {
+    return fetch("../assets/reanim/" + name + ".reanim").then(function (r) { return r.text(); }).then(function (xml) {
+      __reanims[name] = Reanim.parse(xml);
+    });
+  }).concat(NEED_IMAGES.map(function (name) {
+    return new Promise(function (done) {
+      var img = new Image();
+      img.onload = function () { __imgs.set(norm(name), img); done(); };
+      img.onerror = function () { done(); };
+      img.src = "../assets/reanim/" + name + ".png";
+    });
+  }))
+).then(function () {
+  var ctx = document.getElementById("c").getContext("2d");
+  // 三组苗：t = 0.3 / 0.9 / 2.0（完整生长过程）；三组僵尸头：t = 0.2 / 0.7 / 1.6
+  var times = [0.3, 0.9, 2.0];
+  times.forEach(function (t, i) {
+    var sprout = __reanims["LoadBar_sprout"];
+    var anim = sprout.anims.anim_sprout;
+    var frame = anim.start + Math.min(anim.end - anim.start, Math.floor(t * sprout.fps));
+    // 参考线：地面 y=100+i*60，锚点暂设 (150 + i*220, 地面)
+    var ground = 100 + i * 60;
+    ctx.fillStyle = "#567";
+    ctx.fillRect(0, ground, 800, 2);
+    ctx.save();
+    ctx.translate(150 + i * 220, ground);
+    Reanim.draw(ctx, sprout, frame, 0, 0);
+    ctx.restore();
+  });
+  times.forEach(function (t, i) {
+    var head = __reanims["LoadBar_Zombiehead"];
+    var anim = head.anims.anim_zombie;
+    var frame = anim.start + Math.min(anim.end - anim.start, Math.floor(t * head.fps));
+    var ground = 100 + i * 60;
+    ctx.save();
+    ctx.translate(120 + i * 220, ground);
+    Reanim.draw(ctx, head, frame, 0, 0);
+    ctx.restore();
+  });
+  // 给主进程留截图时间
+  setTimeout(function () { document.title = "READY"; }, 300);
+});
+</script>
+</body>
+</html>

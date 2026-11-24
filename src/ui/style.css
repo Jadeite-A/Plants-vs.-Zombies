@@ -1,0 +1,36 @@
+/*
+ * 全局样式：页面即 800×600 的游戏画布，没有滚动条、没有系统光标
+ * （光标由 #game/#cursor 画布绘制，见 app/main.js）。
+ */
+html,
+body {
+  margin: 0;
+  width: 800px;
+  height: 600px;
+  background: #6eb7ea;
+  overflow: hidden;
+  position: relative;
+  cursor: none;
+}
+
+#game {
+  width: 800px;
+  height: 600px;
+  display: block;
+  background: #6eb7ea;
+  cursor: none;
+  image-rendering: auto;
+}
+
+#cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 240px;
+  height: 220px;
+  pointer-events: none;
+  cursor: none;
+  visibility: hidden;
+  will-change: transform;
+  z-index: 2;
+}

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>植物大战僵尸</title>
+    <link rel="stylesheet" href="src/ui/style.css" />
+  </head>
+  <body>
+    <!-- 两个画布就是全部界面：加载画面、菜单、战斗都画在 #game 上；
+         #cursor 只在举着植物/铲子时叠在鼠标下面。 -->
+    <canvas id="game" width="800" height="600"></canvas>
+    <canvas id="cursor" width="240" height="220"></canvas>
+    <!-- 唯一的脚本入口：src/core/loader.js 按依赖顺序注入所有模块。 -->
+    <script src="src/core/loader.js"></script>
+  </body>
+</html>
